@@ -3,12 +3,47 @@ package doefacil.view;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class Login {
 
-    public static JFrame pageLogin() {
+    private static final String URL = "jdbc:mysql://localhost:3306/doefacil";
+    private static final String USER = "root";
+    private static final String PASSWORD = "";
+
+    public static boolean validarLogin(String usuario, String senha) {
+
+        try (Connection connection = DriverManager.getConnection(URL, USER, PASSWORD)) {
+
+            String sql = "SELECT * FROM user WHERE username = ? AND password = ?";
+
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setString(1, usuario);
+                stmt.setString(2, senha);
+
+                stmt.executeQuery();
+
+                try (ResultSet result = stmt.executeQuery()) {
+                    return result.next();
+                }
+
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erro de conexão com o banco!");
+        }
+
+        return false;
+
+    }
+
+    public static Frame telaLogin() {
+
         // Criar o frame (janela)
         JFrame frame = new JFrame("Tela de Login");
         frame.setSize(400, 500);
@@ -16,11 +51,11 @@ public class Login {
         frame.setLocationRelativeTo(null); // Centralizar a janela na tela
 
         // Criar um painel com um layout adequado
-        JPanel panel = new JPanel(new GridBagLayout()); // Para centralizar
-        panel.setBorder(new EmptyBorder(2, 2, 2, 2)); // Adicionar padding
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(new EmptyBorder(2, 2, 2, 2));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(2, 2, 2, 2); // Espaçamento interno entre componentes
+        gbc.insets = new Insets(2, 2, 2, 2);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -63,24 +98,18 @@ public class Login {
         // Tornar a janela visível
         frame.setVisible(true);
 
-        // Adicionar ação ao botão
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String usuario = usuarioField.getText();
-                String senha = new String(senhaField.getPassword());
+        loginButton.addActionListener(e -> {
+            String usuario = usuarioField.getText();
+            String senha = new String(senhaField.getPassword());
 
-                // Simples validação de login (substituir por lógica real)
-                if (usuario.equals("admin") && senha.equals("1234")) {
-                    JOptionPane.showMessageDialog(frame, "Login bem-sucedido!");
-                } else {
-                    JOptionPane.showMessageDialog(frame, "Usuário ou senha inválidos.");
-                }
+            if (validarLogin(usuario, senha)) {
+                JOptionPane.showMessageDialog(frame, "Login bem-sucedido!");
+            } else {
+                JOptionPane.showMessageDialog(frame, "Usuário ou senha inválidos.");
             }
         });
 
         return frame;
 
     }
-
 }

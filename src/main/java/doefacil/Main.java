@@ -7,7 +7,7 @@ public class Main {
 
         Login login = new Login();
 
-        login.pageLogin();
+        login.telaLogin();
 
     }
 
